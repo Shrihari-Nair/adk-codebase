@@ -1,28 +1,40 @@
+# Memory Agent - Persistent Storage Agent with Custom Tools
+# This agent demonstrates how to create custom tools that can read and write session state
+# It provides a complete reminder management system with persistent storage
+
 from google.adk.agents import Agent
 from google.adk.tools.tool_context import ToolContext
 
 
 def add_reminder(reminder: str, tool_context: ToolContext) -> dict:
-    """Add a new reminder to the user's reminder list.
-
+    """
+    Add a new reminder to the user's reminder list.
+    
+    This tool demonstrates how to read from and write to session state.
+    It retrieves the current reminders list, adds a new reminder, and
+    updates the session state with the modified list.
+    
     Args:
-        reminder: The reminder text to add
-        tool_context: Context for accessing and updating session state
-
+        reminder: The reminder text to add to the user's list
+        tool_context: Context object that provides access to session state
+        
     Returns:
-        A confirmation message
+        dict: A confirmation message with the action performed and reminder added
     """
     print(f"--- Tool: add_reminder called for '{reminder}' ---")
 
-    # Get current reminders from state
+    # Get current reminders from session state
+    # Use .get() with default empty list to handle cases where reminders don't exist yet
     reminders = tool_context.state.get("reminders", [])
 
-    # Add the new reminder
+    # Add the new reminder to the list
     reminders.append(reminder)
 
-    # Update state with the new list of reminders
+    # Update the session state with the new list of reminders
+    # This change will be automatically persisted to the database
     tool_context.state["reminders"] = reminders
 
+    # Return a structured response that the agent can use
     return {
         "action": "add_reminder",
         "reminder": reminder,
@@ -31,41 +43,56 @@ def add_reminder(reminder: str, tool_context: ToolContext) -> dict:
 
 
 def view_reminders(tool_context: ToolContext) -> dict:
-    """View all current reminders.
-
+    """
+    View all current reminders in the user's list.
+    
+    This tool demonstrates how to read from session state without modifying it.
+    It retrieves the current reminders list and returns it along with a count.
+    
     Args:
-        tool_context: Context for accessing session state
-
+        tool_context: Context object that provides access to session state
+        
     Returns:
-        The list of reminders
+        dict: The list of reminders and count, along with the action performed
     """
     print("--- Tool: view_reminders called ---")
 
-    # Get reminders from state
+    # Get reminders from session state
+    # Use .get() with default empty list to handle cases where reminders don't exist yet
     reminders = tool_context.state.get("reminders", [])
 
-    return {"action": "view_reminders", "reminders": reminders, "count": len(reminders)}
+    # Return the reminders list and count for the agent to use
+    return {
+        "action": "view_reminders", 
+        "reminders": reminders, 
+        "count": len(reminders)
+    }
 
 
 def update_reminder(index: int, updated_text: str, tool_context: ToolContext) -> dict:
-    """Update an existing reminder.
-
+    """
+    Update an existing reminder in the user's list.
+    
+    This tool demonstrates how to modify existing data in session state.
+    It validates the index, updates the reminder, and persists the change.
+    
     Args:
-        index: The 1-based index of the reminder to update
+        index: The 1-based index of the reminder to update (user-friendly indexing)
         updated_text: The new text for the reminder
-        tool_context: Context for accessing and updating session state
-
+        tool_context: Context object that provides access to session state
+        
     Returns:
-        A confirmation message
+        dict: A confirmation message with the action performed and update details
     """
     print(
         f"--- Tool: update_reminder called for index {index} with '{updated_text}' ---"
     )
 
-    # Get current reminders from state
+    # Get current reminders from session state
     reminders = tool_context.state.get("reminders", [])
 
-    # Check if the index is valid
+    # Check if the index is valid (1-based indexing for user-friendliness)
+    # Validate that the list exists, index is at least 1, and index is within bounds
     if not reminders or index < 1 or index > len(reminders):
         return {
             "action": "update_reminder",
@@ -73,13 +100,16 @@ def update_reminder(index: int, updated_text: str, tool_context: ToolContext) ->
             "message": f"Could not find reminder at position {index}. Currently there are {len(reminders)} reminders.",
         }
 
-    # Update the reminder (adjusting for 0-based indices)
+    # Update the reminder (adjusting for 0-based list indexing)
+    # Store the old reminder text for the response
     old_reminder = reminders[index - 1]
     reminders[index - 1] = updated_text
 
-    # Update state with the modified list
+    # Update the session state with the modified list
+    # This change will be automatically persisted to the database
     tool_context.state["reminders"] = reminders
 
+    # Return a structured response with the update details
     return {
         "action": "update_reminder",
         "index": index,
@@ -90,21 +120,26 @@ def update_reminder(index: int, updated_text: str, tool_context: ToolContext) ->
 
 
 def delete_reminder(index: int, tool_context: ToolContext) -> dict:
-    """Delete a reminder.
-
+    """
+    Delete a reminder from the user's list.
+    
+    This tool demonstrates how to remove data from session state.
+    It validates the index, removes the reminder, and persists the change.
+    
     Args:
-        index: The 1-based index of the reminder to delete
-        tool_context: Context for accessing and updating session state
-
+        index: The 1-based index of the reminder to delete (user-friendly indexing)
+        tool_context: Context object that provides access to session state
+        
     Returns:
-        A confirmation message
+        dict: A confirmation message with the action performed and deletion details
     """
     print(f"--- Tool: delete_reminder called for index {index} ---")
 
-    # Get current reminders from state
+    # Get current reminders from session state
     reminders = tool_context.state.get("reminders", [])
 
-    # Check if the index is valid
+    # Check if the index is valid (1-based indexing for user-friendliness)
+    # Validate that the list exists, index is at least 1, and index is within bounds
     if not reminders or index < 1 or index > len(reminders):
         return {
             "action": "delete_reminder",
@@ -112,12 +147,15 @@ def delete_reminder(index: int, tool_context: ToolContext) -> dict:
             "message": f"Could not find reminder at position {index}. Currently there are {len(reminders)} reminders.",
         }
 
-    # Remove the reminder (adjusting for 0-based indices)
+    # Remove the reminder (adjusting for 0-based list indexing)
+    # Store the deleted reminder text for the response
     deleted_reminder = reminders.pop(index - 1)
 
-    # Update state with the modified list
+    # Update the session state with the modified list
+    # This change will be automatically persisted to the database
     tool_context.state["reminders"] = reminders
 
+    # Return a structured response with the deletion details
     return {
         "action": "delete_reminder",
         "index": index,
@@ -127,23 +165,30 @@ def delete_reminder(index: int, tool_context: ToolContext) -> dict:
 
 
 def update_user_name(name: str, tool_context: ToolContext) -> dict:
-    """Update the user's name.
-
+    """
+    Update the user's name in the session state.
+    
+    This tool demonstrates how to update simple string values in session state.
+    It stores the old name and updates to the new name.
+    
     Args:
         name: The new name for the user
-        tool_context: Context for accessing and updating session state
-
+        tool_context: Context object that provides access to session state
+        
     Returns:
-        A confirmation message
+        dict: A confirmation message with the action performed and name change details
     """
     print(f"--- Tool: update_user_name called with '{name}' ---")
 
-    # Get current name from state
+    # Get current name from session state
+    # Use .get() with default empty string to handle cases where name doesn't exist yet
     old_name = tool_context.state.get("user_name", "")
 
-    # Update the name in state
+    # Update the name in session state
+    # This change will be automatically persisted to the database
     tool_context.state["user_name"] = name
 
+    # Return a structured response with the name change details
     return {
         "action": "update_user_name",
         "old_name": old_name,
@@ -152,11 +197,15 @@ def update_user_name(name: str, tool_context: ToolContext) -> dict:
     }
 
 
-# Create a simple persistent agent
+# Create the persistent memory agent with custom tools
+# This agent combines natural language understanding with state management capabilities
 memory_agent = Agent(
+    # Basic agent configuration
     name="memory_agent",
-    model="gemini-2.0-flash",
+    model="gemini-2.0-flash",  # Fast and efficient model for real-time interactions
     description="A smart reminder agent with persistent memory",
+    
+    # Core instructions that define the agent's behavior and capabilities
     instruction="""
     You are a friendly reminder assistant that remembers users across conversations.
     
@@ -220,11 +269,14 @@ memory_agent = Agent(
     - You don't have to be 100% correct, but try to be as close as possible.
     - Never ask the user to clarify which reminder they are referring to.
     """,
+    
+    # List of custom tools that the agent can use
+    # These tools provide the agent with the ability to read and write session state
     tools=[
-        add_reminder,
-        view_reminders,
-        update_reminder,
-        delete_reminder,
-        update_user_name,
+        add_reminder,      # Tool to add new reminders
+        view_reminders,    # Tool to view all reminders
+        update_reminder,   # Tool to update existing reminders
+        delete_reminder,   # Tool to delete reminders
+        update_user_name,  # Tool to update user's name
     ],
 )

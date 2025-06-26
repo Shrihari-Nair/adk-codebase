@@ -49,6 +49,19 @@ An advanced example demonstrating stateful sessions for maintaining context acro
 
 [View Stateful Sessions README](4-state-sessions/README.md)
 
+### 5. Persistent Storage (`5-persistent-storage`)
+An advanced example demonstrating database-backed persistent storage for long-term data retention.
+- **Purpose**: Stores user data and session information in a SQLite database for persistence across application restarts
+- **Features**:
+  - Database-backed session services
+  - Smart reminder management with CRUD operations
+  - Session continuity and automatic discovery
+  - Interactive CLI with colored output
+  - Custom tools for state manipulation
+- **Use Case**: Production applications requiring persistent data storage, personal assistants, and task management systems
+
+[View Persistent Storage README](5-persistent-storage/README.md)
+
 ## Prerequisites
 
 1. **Python 3.8 or higher**
@@ -90,6 +103,11 @@ GOOGLE_API_KEY=your_gemini_api_key_here
 ```
 
 #### Stateful Sessions
+```
+GOOGLE_API_KEY=your_gemini_api_key_here
+```
+
+#### Persistent Storage
 ```
 GOOGLE_API_KEY=your_gemini_api_key_here
 ```
@@ -148,6 +166,15 @@ adk-codebase/
 │   │   └── agent.py                  # Agent with session state
 │   ├── .env                          # Environment variables
 │   └── README.md
+├── 5-persistent-storage/             # Database-backed persistent storage
+│   ├── main.py                       # Main execution script with session management
+│   ├── utils.py                      # Utility functions for CLI and state display
+│   ├── memory_agent/
+│   │   ├── __init__.py
+│   │   └── agent.py                  # Agent with custom tools and database storage
+│   ├── my_agent_data.db              # SQLite database (created automatically)
+│   ├── .env                          # Environment variables
+│   └── README.md
 ├── requirements.txt                  # Project dependencies
 └── README.md                        # This file
 ```
@@ -164,14 +191,16 @@ All agents in this repository share these features:
 
 ## Agent Capabilities Comparison
 
-| Feature | Basic Agent | Tool Agent | Structured Agent | Stateful Sessions |
-|---------|-------------|------------|------------------|-------------------|
-| Basic Conversation | ✅ | ✅ | ✅ | ✅ |
-| Tool Integration | ❌ | ✅ | ❌ | ❌ |
-| Structured Output | ❌ | ❌ | ✅ | ❌ |
-| State Management | ❌ | ❌ | ❌ | ✅ |
-| Web Interface | ✅ | ✅ | ✅ | ✅ |
-| API Keys Required | 1 | 2 | 1 | 1 |
+| Feature | Basic Agent | Tool Agent | Structured Agent | Stateful Sessions | Persistent Storage |
+|---------|-------------|------------|------------------|-------------------|-------------------|
+| Basic Conversation | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Tool Integration | ❌ | ✅ | ❌ | ❌ | ✅ |
+| Structured Output | ❌ | ❌ | ✅ | ❌ | ❌ |
+| State Management | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Database Storage | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Web Interface | ✅ | ✅ | ✅ | ✅ | ❌ |
+| CLI Interface | ❌ | ❌ | ❌ | ❌ | ✅ |
+| API Keys Required | 1 | 2 | 1 | 1 | 1 |
 
 ## Example Interactions
 
@@ -194,6 +223,13 @@ All agents in this repository share these features:
 - "What is shrihari's favorite TV show?"
 - "What sports does shrihari like?"
 - "What is shrihari's favorite food?"
+
+### Persistent Storage
+- "Hi, my name is John"
+- "Add a reminder to buy groceries"
+- "What are my reminders?"
+- "Update reminder 1 to buy organic groceries"
+- "Delete my grocery reminder"
 
 ## Troubleshooting
 
